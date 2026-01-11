@@ -2,6 +2,9 @@ x-airflow-common: &airflow-common
   build:
     context: ./airflow_dockerfile
     dockerfile: Dockerfile
+    args:
+      AIRFLOW_UID: ${AIRFLOW_UID}
+      AIRFLOW_GID: ${AIRFLOW_GID}
   user: "${AIRFLOW_UID}:${AIRFLOW_GID}"
   env_file:
     - .env
@@ -9,11 +12,14 @@ x-airflow-common: &airflow-common
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow 
+    AIRFLOW__DAG_PROCESSOR__DAG_BUNDLE_STORAGE_PATH: /opt/airflow/dag_bundles
     AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ${FERNET_KEY}
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
-    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: 5
+    AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: 5
+    AIRFLOW__CORE__AUTH_MANAGER: "airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager"
     _AIRFLOW_DB_MIGRATE: 'true'
     _AIRFLOW_WWW_USER_CREATE: 'true'
     _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME}
@@ -24,8 +30,10 @@ x-airflow-common: &airflow-common
     - ./synthetic_data:/opt/synthetic_data
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
+    - ./logs/dag_processor_manager:/opt/airflow/logs/dag_processor
     - ./plugins:/opt/airflow/plugins
     - ./scripts:/opt/airflow/scripts
+    - ./dag_bundles:/opt/airflow/dag_bundles
     - ./dbt_click:/opt/dbt_click
   depends_on:
     postgres:
@@ -44,6 +52,7 @@ services:
       - "5432:5432"
     restart: always
     volumes:
+      - ./data/csv:/csv
       - postgres-db-volume:/var/lib/postgresql/data
       - ./src/init_db:/docker-entrypoint-initdb.d
     healthcheck:
@@ -80,9 +89,16 @@ services:
   af-webserver:
     <<: *airflow-common
     container_name: af-webserver
-    command: webserver
+    command: api-server
     ports:
       - "8080:8080"
+    restart: always
+
+
+  af-dag-processor:
+    <<: *airflow-common
+    container_name: af-dag-processor
+    command: dag-processor
     restart: always
 
   af-scheduler:

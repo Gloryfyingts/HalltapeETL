@@ -1,20 +1,20 @@
 from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.utils.dates import days_ago
 import random
+import pendulum
 from datetime import datetime
 
 default_args = {
     'owner': 'creator',
-    'start_date': days_ago(1),
+    'start_date': pendulum.now().subtract(days=1),
     'retries': 1
 }
 
 dag = DAG(
     dag_id="Create_Postgres__app_installs",
     default_args=default_args,
-    schedule_interval="* * * * *",
+    schedule="* * * * *",
     description="Симуляция установок приложения",
     catchup=False,
     tags=['technical', 'app_installs']
@@ -56,4 +56,4 @@ insert_app_installs = PythonOperator(
     dag=dag,
 )
 
-generate_app_installs >> insert_app_installs
+generate_app_installs >> insert_app_installs # type: ignore

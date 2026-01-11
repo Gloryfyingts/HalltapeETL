@@ -1,4 +1,4 @@
-FROM apache/airflow:2.10.5-python3.9
+FROM apache/airflow:3.1.3-python3.12
 
 COPY requirements.txt /requirements.txt
 
@@ -8,6 +8,8 @@ RUN python -m pip install --upgrade pip && \
 USER root
 RUN apt update && \
     apt install -y openjdk-17-jdk
+RUN mkdir -p /opt/airflow/logs/dag_processor
+RUN chown -R 50000:0 /opt/airflow/logs/dag_processor
 
 USER airflow
 

@@ -1,10 +1,10 @@
 import json
 import requests
+import pendulum
 from datetime import datetime
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
-from airflow.utils.dates import days_ago
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 
@@ -43,13 +43,13 @@ def fetch_github_and_upload_s3hook():
 
 default_args = {
     'owner': 'loader',
-    'start_date': days_ago(1),
+    'start_date': pendulum.now().subtract(days=1),
 }
 
 dag = DAG(
     dag_id='Load_API__github',
     default_args=default_args,
-    schedule_interval='*/1 * * * *',
+    schedule='*/1 * * * *',
     catchup=False,
     description='API github to S3',
     tags=['github', 's3', 'hook']

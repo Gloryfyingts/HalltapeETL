@@ -9,13 +9,14 @@ RUN pip install --upgrade pip
 RUN pip install clickhouse-connect
 
 # Установка системных зависимостей
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    default-libmysqlclient-dev \
+    pkg-config \
+    python3-dev \
     libssl-dev \
     libffi-dev \
-    python3-dev \
-    pkg-config && \
-    rm -rf /var/lib/apt/lists/*  # Очистка кэша apt
+    && rm -rf /var/lib/apt/lists/*  # Очистка кэша apt
 
 # Установка Python-пакетов
 RUN pip install mysqlclient

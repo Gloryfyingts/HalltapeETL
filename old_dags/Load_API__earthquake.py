@@ -1,12 +1,12 @@
 import json
 import requests
 from datetime import datetime, timedelta
+import pendulum
 import logging
 import pandas as pd
 
 from airflow import DAG
-from airflow.operators.python import PythonOperator
-from airflow.utils.dates import days_ago
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 
 from db_utils import S3MaxDateManager
@@ -16,13 +16,13 @@ logger = logging.getLogger("airflow.task")
 
 default_args = {
     'owner': 'loader',
-    'start_date': days_ago(1)
+    'start_date': pendulum.now().subtract(days=1),
 }
 
 dag = DAG(
     dag_id='Load_API__earthquake',
     default_args=default_args,
-    schedule_interval='@daily',
+    schedule='@daily',
     catchup=False,
     description='API earthquake to S3',
     tags=['earthquake', 's3', 'airflow']

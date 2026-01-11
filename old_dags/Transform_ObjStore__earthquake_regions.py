@@ -1,19 +1,20 @@
 import os
+import pendulum
 from airflow import DAG
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from airflow.utils.dates import days_ago
+
 
 
 default_args = {
     'owner': 'transformer',
-    'start_date': days_ago(1),
+    'start_date': pendulum.now().subtract(days=1),
     'retries': 1
 }
 
 dag = DAG(
     dag_id="Transform_ObjStore__earthquake_regions",
     default_args=default_args,
-    schedule_interval="00 10 * * *",
+    schedule="00 10 * * *",
     description="Spark Submit Inc",
     catchup=False,
     tags=['spark', 'transform']

@@ -1,4 +1,6 @@
+*.pyc
 logs/
+dag_boundles/
 data_lake/
 synthetic_data/.ipynb_checkpoints
 jupyter_notebook/*
@@ -12,3 +14,10 @@ dags/.DS_Store
 .DS_Store
 s3_storage/
 temp/
+.venv/
+data/*
+!data/scripts
+plugins/__pycache__
+airflow.db
+
+dag_bundles/.probe

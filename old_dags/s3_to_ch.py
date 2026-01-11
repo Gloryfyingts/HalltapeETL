@@ -1,9 +1,9 @@
 import os
 import pendulum
 from airflow import DAG
-from airflow.operators.bash import BashOperator
+from airflow.providers.standard.operators.bash import BashOperator
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from airflow.sensors.python import PythonSensor
+from airflow.providers.standard.sensors.python import PythonSensor
 from airflow.utils.db import provide_session
 # from airflow.models import DagRun
 # from airflow.sensors.external_task import ExternalTaskSensor

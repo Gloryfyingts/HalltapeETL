@@ -1,20 +1,21 @@
 import os
+import pendulum
 from airflow import DAG
 from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
-from airflow.utils.dates import days_ago
+
 
 
 default_args = {
     'owner': 'loader',
-    'start_date': days_ago(1),
+    'start_date': pendulum.now().subtract(days=1),
     'retries': 1
 }
 
 dag = DAG(
-    dag_id="Load_JDBC__regions",
+    dag_id="Load_JDBC__app_installs",
     default_args=default_args,
-    schedule_interval="00 10 * * *",
-    description="Spark Submit Full",
+    schedule="*/1 * * * *",
+    description="Spark Submit Inc",
     catchup=False,
     tags=['spark', 'batch']
 )
@@ -22,14 +23,14 @@ dag = DAG(
 
 jdbc_to_s3 = SparkSubmitOperator(
     task_id='spark_jdbc_to_s3',
-    application='/opt/airflow/scripts/load/load__full_refresh.py',
+    application='/opt/airflow/scripts/load/load__app_installs.py',
     conn_id='spark_default',
     application_args=[
         '--jdbc-url', 'jdbc:postgresql://postgres:5432/backend',
         '--db-user', os.getenv('POSTGRES_USER'),
         '--db-password', os.getenv('POSTGRES_PASSWORD'),
-        '--table-name', 'public.regions',
-        '--s3-path', f's3a://{os.getenv("MINIO_PROD_BUCKET_NAME")}/jdbc/regions/'
+        '--table-name', 'public.app_installs',
+        '--s3-path', f's3a://{os.getenv("MINIO_PROD_BUCKET_NAME")}/jdbc/app_installs/'
     ],
     conf={
         "spark.executor.instances": "1",

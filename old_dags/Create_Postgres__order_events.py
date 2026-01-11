@@ -1,21 +1,21 @@
-from airflow import DAG
-from airflow.operators.python import PythonOperator
+from airflow.sdk import DAG
+from airflow.providers.standard.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.utils.dates import days_ago
 import random
+import pendulum
 from datetime import datetime
 
 
 default_args = {
     'owner': 'creator',
-    'start_date': days_ago(1),
+    'start_date': pendulum.now().subtract(days=1),
     'retries': 1
 }
 
 dag = DAG(
     dag_id="Create_Postgres__order_events",
     default_args=default_args,
-    schedule_interval="* * * * *",
+    schedule="* * * * *",
     description="Симуляция статусов заказов",
     catchup=False,
     tags=['technical', 'order_events']
@@ -94,4 +94,4 @@ modify_order_events = PythonOperator(
 )
 
 
-generate_order_events >> insert_order_events >> modify_order_events
+generate_order_events >> insert_order_events >> modify_order_events # type: ignore
